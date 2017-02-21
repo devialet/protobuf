@@ -171,17 +171,18 @@ if( NOT CMAKE_CROSSCOMPILING )
   include(libprotoc.cmake)
   include(protoc.cmake)
 
-  if (protobuf_BUILD_TESTS)
-    include(tests.cmake)
-  endif (protobuf_BUILD_TESTS)
-
-  include(install.cmake)
-
-  if (protobuf_BUILD_EXAMPLES)
-    include(examples.cmake)
-  endif (protobuf_BUILD_EXAMPLES)
-
 endif()
+
+if (protobuf_BUILD_TESTS)
+  include(tests.cmake)
+endif (protobuf_BUILD_TESTS)
+
+include(install.cmake)
+
+if (protobuf_BUILD_EXAMPLES)
+  include(examples.cmake)
+endif (protobuf_BUILD_EXAMPLES)
+
 
 if(protobuf_VERBOSE)
     message(STATUS "Protocol Buffers Configuring done")
