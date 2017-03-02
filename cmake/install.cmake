@@ -1,21 +1,28 @@
 include(GNUInstallDirs)
 
-foreach(_library
-  libprotobuf-lite
-  libprotobuf
-  libprotoc)
-  set_property(TARGET ${_library}
-    PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_source_dir}/src>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-  install(TARGETS ${_library} EXPORT protobuf-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library})
-endforeach()
+set(_libraries libprotobuf-lite libprotobuf )
+if( TARGET libprotoc )
+  list( APPEND _libraries libprotoc )
+endif()
 
-install(TARGETS protoc EXPORT protoc-targets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+set(_executables)
+if( TARGET protoc )
+  list( APPEND _executables protoc )
+endif()
+
+set_property(TARGET ${_libraries}
+  PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${protobuf_source_dir}/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+install(TARGETS ${_libraries} EXPORT protobuf-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library})
+
+if( _executables )
+  install(TARGETS ${_executables} EXPORT protoc-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+endif()
 
 file(STRINGS extract_includes.bat.in _extract_strings
   REGEX "^copy")
@@ -101,11 +108,13 @@ configure_file(protobuf-module.cmake.in
 configure_file(protobuf-options.cmake
   ${PROTOBUF_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
 
-configure_file(protoc-config.cmake.in
-  ${PROTOC_INSTALL_CMAKEDIR}/protoc-config.cmake @ONLY)
+if( _executables )
+  configure_file(protoc-config.cmake.in
+    ${PROTOC_INSTALL_CMAKEDIR}/protoc-config.cmake @ONLY)
+endif()
 
 # Allows the build directory to be used as a find directory.
-export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
+export(TARGETS ${_libraries} ${_executables}
   NAMESPACE protobuf::
   FILE ${PROTOBUF_INSTALL_CMAKEDIR}/protobuf-targets.cmake
 )
@@ -121,15 +130,17 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PROTOBUF_INSTALL_CMAKEDIR}/
   PATTERN protobuf-targets.cmake EXCLUDE
 )
 
-install(EXPORT protoc-targets
-  DESTINATION "${PROTOC_INSTALL_CMAKEDIR}"
-  NAMESPACE protobuf::
-  COMPONENT protoc-export)
+if( _executables )
+  install(EXPORT protoc-targets
+    DESTINATION "${PROTOC_INSTALL_CMAKEDIR}"
+    NAMESPACE protobuf::
+    COMPONENT protoc-export)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PROTOC_INSTALL_CMAKEDIR}/
-  DESTINATION "${PROTOC_INSTALL_CMAKEDIR}"
-  COMPONENT protoc-export
-)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PROTOC_INSTALL_CMAKEDIR}/
+    DESTINATION "${PROTOC_INSTALL_CMAKEDIR}"
+    COMPONENT protoc-export
+  )
+endif()
 
 option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
 if(protobuf_INSTALL_EXAMPLES)

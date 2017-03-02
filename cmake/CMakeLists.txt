@@ -165,8 +165,13 @@ endif (protobuf_UNICODE)
 
 include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
-include(libprotoc.cmake)
-include(protoc.cmake)
+
+if( NOT CMAKE_CROSSCOMPILING )
+
+  include(libprotoc.cmake)
+  include(protoc.cmake)
+
+endif()
 
 if (protobuf_BUILD_TESTS)
   include(tests.cmake)
@@ -177,6 +182,7 @@ include(install.cmake)
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)
 endif (protobuf_BUILD_EXAMPLES)
+
 
 if(protobuf_VERBOSE)
     message(STATUS "Protocol Buffers Configuring done")
