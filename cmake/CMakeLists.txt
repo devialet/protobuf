@@ -157,7 +157,7 @@ if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   configure_file(extract_includes.bat.in extract_includes.bat)
-  
+
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
 endif (MSVC)
@@ -184,8 +184,13 @@ endif (protobuf_UNICODE)
 
 include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
-include(libprotoc.cmake)
-include(protoc.cmake)
+
+if( NOT CMAKE_CROSSCOMPILING )
+
+    include(libprotoc.cmake)
+    include(protoc.cmake)
+
+endif()
 
 if (protobuf_BUILD_TESTS)
   include(tests.cmake)
